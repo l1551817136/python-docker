@@ -1,0 +1,39 @@
+version: '2'
+services:
+    uwsgi0:
+        build: ./images/uwsgi
+        restart: always
+        container_name: uwsgi0
+        expose:
+            - "9090"
+        volumes:
+            - "/var/www/appraise:/app"
+            - "/var/www/configs/uwsgi:/configs"
+            - "/var/log/uwsgi:/var/log/uwsgi"
+        hostname: uwsgi0
+        depends_on:
+            - db
+    nginx:
+        image: nginx:latest
+        restart: always
+        container_name: nginx
+        hostname: nginx
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - "/var/www/appraise/static:/var/www/static"
+            - "/var/www/configs/nginx/nginx.conf:/etc/nginx/nginx.conf"
+            - "/var/log/nginx:/var/log/nginx"
+        links:
+            - uwsgi0
+    db:
+      image: mysql:5.7
+      volumes:
+        - "/var/www/mysql:/var/lib/mysql"
+      ports:
+        - "3310:3306"
+      restart: always
+      environment:
+        - MYSQL_ROOT_PASSWORD=jsf123
+        - MYSQL_DATABASE=appraise_jsf
